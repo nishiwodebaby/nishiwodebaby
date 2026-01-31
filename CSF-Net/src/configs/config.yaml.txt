@@ -1,0 +1,50 @@
+# Project Configuration
+project_name: "CSF-Net"
+log_dir: "./logs"
+checkpoint_dir: "./checkpoints"
+result_dir: "./results"
+
+# Data Configuration
+data:
+  dataset: "BraTS2024"  # Options: BraTS2019, BraTS2021, BraTS2024
+  data_root: "./data/BraTS2024_Training"  # CHANGE THIS to your data path
+  modalities: ["flair", "t1", "t1ce", "t2"]  # Corresponding modality suffixes
+  num_classes: 4  # Background + 3 tumor classes (WT, TC, ET for evaluation)
+  eval_regions: [1, 2, 3]  # Labels for WT, TC, ET
+  train_split: 0.8  # Train/Val split ratio (if no official split)
+  input_size: [240, 240]  # 2D slice size
+  norm_method: "zscore"  # "zscore" or "minmax"
+
+# Model Configuration
+model:
+  name: "CSFNet"
+  encoder_channels: [32, 64, 128, 256, 512]  # Channel numbers for each encoder block
+  decoder_channels: [256, 128, 64, 32]  # Channel numbers for each decoder block
+  use_csam: true
+  ffcl_embed_dim: 128  # Embedding dimension for FFCL projection head
+
+# Loss Configuration
+loss:
+  dice_weight: 1.0
+  ce_weight: 1.0  # alpha
+  ffcl_weight: 0.2  # beta
+  ffcl_temperature: 0.1  # tau
+
+# Training Configuration
+training:
+  batch_size: 8
+  num_epochs: 200
+  initial_lr: 1e-4
+  lr_scheduler: "cosine"  # "step", "cosine"
+  optimizer: "AdamW"
+  weight_decay: 1e-4
+  accumulation_steps: 1  # Gradient accumulation
+  num_workers: 4  # DataLoader workers
+  device: "cuda"  # "cuda" or "cpu"
+  seed: 42
+
+# Validation/Testing
+evaluation:
+  metrics: ["dice", "sensitivity", "precision", "hausdorff95"]
+  eval_freq: 5  # Evaluate every N epochs
+  save_freq: 10  # Save checkpoint every N epochs
